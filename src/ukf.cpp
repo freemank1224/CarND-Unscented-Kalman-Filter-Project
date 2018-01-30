@@ -85,6 +85,46 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   Complete this function! Make sure you switch between lidar and radar
   measurements.
   */
+
+  /*****************************************************************************
+   *  Initialization
+   ****************************************************************************/
+  if (!is_initialized_) {
+
+    // first measurement
+    cout << "UKF: " << endl;
+    //ukf.x_ = VectorXd(5);
+    //ukf.x_ << 1, 1, 1, 1;
+
+    if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
+      /**
+      Convert radar from polar to cartesian coordinates and initialize state.
+      */
+    	float rho = measurement_pack.raw_measurements_[0];
+    	float phi = measurement_pack.raw_measurements_[1];
+    	float rho_dot = measurement_pack.raw_measurements_[2];
+
+    	ukf.x_ << rho*cos(phi), rho*sin(phi), 0,phi,0;
+    }
+    else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
+      /**
+      Initialize state.
+      */
+    	float px = measurement_pack.raw_measurements_[0];
+    	float py = measurement_pack.raw_measurements_[1];
+    	float tan = atan2(py,px);
+    	while(tan < -2*M_PI) tan += 2*M_PI;
+    	while(tan > 2*M_PI) tan -= 2*M_PI;
+    	ukf.x_ << px, py, 0, tan, 0;
+    }
+
+    // done initializing, no need to predict or update
+    previous_timestamp_ = measurement_pack.timestamp_;	// Update time step
+
+    is_initialized_ = true;
+
+    return;
+  }
 }
 
 /**
