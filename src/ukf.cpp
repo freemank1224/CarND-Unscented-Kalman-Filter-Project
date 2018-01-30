@@ -60,7 +60,7 @@ UKF::UKF() {
   // State dimension
   n_x_ = x_.size();			// 5
   // Augmented state dimension
-  n_aug_ = n_x + 2;			// 7
+  n_aug_ = n_x_ + 2;			// 7
   // Lambda
   lambda_ = 3 - n_aug_;
 
