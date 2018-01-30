@@ -54,6 +54,22 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
+  // Initialization Knob
+  is_initialized_ = false;
+
+  // State dimension
+  n_x_ = x_.size();			// 5
+  // Augmented state dimension
+  n_aug_ = n_x + 2;			// 7
+  // Lambda
+  lambda_ = 3 - n_aug_;
+
+  // Weights
+  weights_ = VectorXd(2*n_aug_+1);
+
+  // Xsig_pred
+  Xsig_pred_ = MatrixXd(n_aug_, 2*n_aug_+1);
+
 }
 
 UKF::~UKF() {}
