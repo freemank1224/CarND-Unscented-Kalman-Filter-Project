@@ -145,7 +145,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
 
   double delta_t = (meas_package.timestamp_ - time_us_)/1000000.0;
-  time_us_ = measurement_pack.timestamp_;
+  time_us_ = meas_package.timestamp_;
 
 /**
  * Predicts sigma points, the state, and the state covariance matrix.
@@ -265,7 +265,7 @@ void UKF::Prediction(double delta_t) {
   MatrixXd tempMtx = MatrixXd(n_x_, n_x_);
 
   for(int k=0; k<2*n_aug_+1; k++){
-  	tempMtx << weights_(k) * (Xsig_pred.col(k) - x_) * (Xsig_pred.col(k) - x_).transpose();
+  	tempMtx << weights_(k) * (Xsig_pred_.col(k) - x_) * (Xsig_pred_.col(k) - x_).transpose();
   	P_ += tempMtx;
   }
 
