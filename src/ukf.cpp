@@ -7,6 +7,8 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
+
+
 /**
  * Initializes Unscented Kalman filter
  * This is scaffolding, do not modify
@@ -173,7 +175,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       lidar_idx ++;
       std::cout << "LIDAR NO. " << lidar_idx << std::endl;
       std::cout << "****** LIDAR Updated P_: ******" << std::endl;
-  	  std::cout << P_ << std::endl;  
+  	  std::cout << P_ << std::endl;
+
   	  //std::cout << "======================= Finish LIDAR Update =========================== " << std::endl;
   	}
 
@@ -341,6 +344,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   std::cout << "------------ Calculate NIS ---------------" << std::endl;
   //nis = CalculateNIS()
   nis_value = CalculateNIS(z_, z_pred_, S_);
+
   std::cout << "------------ Calculate NIS: " << nis_value <<"---------------" << std::endl;
 
   
@@ -655,3 +659,7 @@ double UKF::CalculateNIS(const VectorXd& z, const VectorXd& z_pred, const Matrix
 	return eps;
 }
 
+double UKF::TransferNIS(double nis){
+
+	return nis;
+}

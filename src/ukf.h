@@ -10,6 +10,7 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+
 class UKF {
 public:
 
@@ -116,6 +117,7 @@ public:
   void GenerateSigmaPoints(MatrixXd* Xsig_out);
   void PredictMeanCovariance();
   double CalculateNIS(const VectorXd& z, const VectorXd& z_pred, const MatrixXd& S);
+  double TransferNIS(double nis);
 
 };
 
