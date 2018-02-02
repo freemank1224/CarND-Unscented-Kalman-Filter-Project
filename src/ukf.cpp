@@ -207,53 +207,12 @@ void UKF::Prediction(double delta_t) {
   */
   
   GenerateSigmaPoints(&Xsig_pred_);
+  std::cout << "------- STEP1. Generate Sigma Points and Predict using Process Model--------OK!" << std::endl;
 
-  /*****************************************\
-  *** Predict STATE Mean and Covariance *****
-  \*****************************************/
-  // Generate Weights
-  for(int i=0; i<2*n_aug_+1; i++){
+  PredictMeanCovariance();
+  std::cout << "------- STEP2. Predict State Mean & Covariance using Sigma Points --------OK!" << std::endl;
 
-  	if(i == 0){
-  		weights_(i) = lambda_ / (lambda_+n_aug_);
-  	}else{
-  		weights_(i) = 1 / (2*(lambda_+n_aug_));
-  	}
-
-  }
-
-  // Predict Mean State
-  for(int j=0; j<n_x_;j++){
-
-  	x_(j) = Xsig_pred_.row(j) * weights_;	// Using Inner Product for two vectors
-
-  	//std::cout << "----Predicted x_: " << x_(j) << std::endl;
-
-  }
-
-  // Predict State Covariance Matrix
-  MatrixXd tempMtx = MatrixXd(n_x_, n_x_);
-  tempMtx.fill(0.0);
-  //std::cout << "----tempMtx: " << tempMtx << std::endl;
-  //std::cout << "---------------------------" << std::endl;
-  //std::cout << "----Predicted P_: " << P_ << std::endl;
-
-  for(int k=0; k<2*n_aug_+1; k++){
-  	// std::cout << "---------------------------" << std::endl;
-  	// std::cout << "Xsig_pred_: " << Xsig_pred_.col(k) << std::endl;
-  	// std::cout << "x_: " << x_ << std::endl;
-  	// std::cout << "transpose: " << (Xsig_pred_.col(k) - x_).transpose() << std::endl;
-
-  	// std::cout << "---------------------------" << std::endl;
-
-  	tempMtx = weights_(k) * (Xsig_pred_.col(k) - x_) * (Xsig_pred_.col(k) - x_).transpose();
-  	//std::cout << "----tempMtx: " << tempMtx << std::endl;
-  	P_ += tempMtx;
-  	//std::cout << "----Predicted P_: " << P_ << std::endl;
-
-  }
-
-  std::cout << "---- Finish Prediction ------ " << std::endl;
+  std::cout << "===== Finish Prediction ===== " << std::endl;
 }
 
 /**
@@ -579,7 +538,59 @@ void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out){
 
 }
 
+/******* PREDICT Mean & Covariance Matrix  *******\
+\************** that is x_ and P_  ***************/
 
+void UKF::PredictMeanCovariance(/*VectorXd* x_out, MatrixXd* P_out*/){
+  /*****************************************\
+  *** Predict STATE Mean and Covariance *****
+  \*****************************************/
+  // Generate Weights
+  for(int i=0; i<2*n_aug_+1; i++){
+
+  	if(i == 0){
+  		weights_(i) = lambda_ / (lambda_+n_aug_);
+  	}else{
+  		weights_(i) = 1 / (2*(lambda_+n_aug_));
+  	}
+
+  }
+
+  // Predict Mean State
+  for(int j=0; j<n_x_;j++){
+
+  	x_(j) = Xsig_pred_.row(j) * weights_;	// Using Inner Product for two vectors
+
+  	//std::cout << "----Predicted x_: " << x_(j) << std::endl;
+
+  }
+
+  // Predict State Covariance Matrix
+  MatrixXd tempMtx = MatrixXd(n_x_, n_x_);
+  tempMtx.fill(0.0);
+  //std::cout << "----tempMtx: " << tempMtx << std::endl;
+  //std::cout << "---------------------------" << std::endl;
+  //std::cout << "----Predicted P_: " << P_ << std::endl;
+
+  for(int k=0; k<2*n_aug_+1; k++){
+  	// std::cout << "---------------------------" << std::endl;
+  	// std::cout << "Xsig_pred_: " << Xsig_pred_.col(k) << std::endl;
+  	// std::cout << "x_: " << x_ << std::endl;
+  	// std::cout << "transpose: " << (Xsig_pred_.col(k) - x_).transpose() << std::endl;
+
+  	// std::cout << "---------------------------" << std::endl;
+
+  	tempMtx = weights_(k) * (Xsig_pred_.col(k) - x_) * (Xsig_pred_.col(k) - x_).transpose();
+  	//std::cout << "----tempMtx: " << tempMtx << std::endl;
+  	P_ += tempMtx;
+  	//std::cout << "----Predicted P_: " << P_ << std::endl;
+
+  }
+
+  // *x_out = x_;
+  // *P_out = P_;
+
+}
 
 
 

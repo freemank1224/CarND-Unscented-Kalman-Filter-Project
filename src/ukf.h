@@ -109,7 +109,10 @@ public:
    */
   void UpdateRadar(MeasurementPackage meas_package);
 
+
+  /** Dyson Freeman Added **/
   void GenerateSigmaPoints(MatrixXd* Xsig_out);
+  void PredictMeanCovariance();
 
 };
 
