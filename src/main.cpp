@@ -106,7 +106,7 @@ int main()
     	  ground_truth.push_back(gt_values);
           
           //Call ProcessMeasurment(meas_package) for Kalman filter
-    	  ukf.ProcessMeasurement(meas_package);    	  
+    	  ukf.ProcessMeasurement(meas_package);	  
 
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
 
@@ -128,6 +128,8 @@ int main()
     	  estimations.push_back(estimate);
 
     	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+    	  std::cout << "==== Finish RMSE =====" << std::endl;
+
 
           json msgJson;
           msgJson["estimate_x"] = p_x;

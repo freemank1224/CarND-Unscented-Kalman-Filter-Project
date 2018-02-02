@@ -67,7 +67,9 @@ public:
   ///* Sigma point spreading parameter
   double lambda_;
 
-  //double previous_timestamp_;
+  // Indicators
+  int lidar_idx;
+  int radar_idx;
 
 
   /**
