@@ -77,6 +77,8 @@ UKF::UKF() {
 
   delta_t = 0.0;
 
+  nis_value = 0.0;
+
 
 
 }
@@ -193,11 +195,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   	//return;
   }
 
-  /*********************** NIS ************************\
-  ****** Switch Lidar and Radar Measurement Data  *****
-  \****************************************************/
-  std::cout << "------------ Calculate NIS ---------------" << std::endl;
-  
+
 }
 
 
@@ -336,6 +334,16 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   std::cout << "****** Lidar Update P_: ******" << std::endl;
   std::cout << P_ << std::endl;  
+
+  /*********************** NIS ************************\
+  ****** Switch Lidar and Radar Measurement Data  *****
+  \****************************************************/
+  std::cout << "------------ Calculate NIS ---------------" << std::endl;
+  //nis = CalculateNIS()
+  nis_value = CalculateNIS(z_, z_pred_, S_);
+  std::cout << "------------ Calculate NIS: " << nis_value <<"---------------" << std::endl;
+
+  
 }
 
 
@@ -469,7 +477,17 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   P_ = P_ - K_ * S_ * K_.transpose();
 
   std::cout << "****** Radar Update P_: ******" << std::endl;
-  std::cout << P_ << std::endl;  
+  std::cout << P_ << std::endl;
+
+
+  /*********************** NIS ************************\
+  ****** Switch Lidar and Radar Measurement Data  *****
+  \****************************************************/
+  
+  //nis = CalculateNIS()
+  nis_value = CalculateNIS(z_, z_pred_, S_);
+  std::cout << "------------ Calculate NIS: " << nis_value <<"---------------" << std::endl;
+
 
 }
 
@@ -619,5 +637,21 @@ void UKF::PredictMeanCovariance(){
   // *x_out = x_;
   // *P_out = P_;
 
+}
+
+
+double UKF::CalculateNIS(const VectorXd& z, const VectorXd& z_pred, const MatrixXd& S){
+
+	VectorXd z_err = z - z_pred;
+
+	if (z_err.size() > 2)
+	{
+		while(z_err(1) < -M_PI) z_err(1) += 2.*M_PI;
+		while(z_err(1) > M_PI) z_err(1) -= 2.*M_PI;
+	}
+
+	double eps = z_err.transpose() * S.inverse() * z_err;
+
+	return eps;
 }
 
