@@ -75,6 +75,8 @@ UKF::UKF() {
   lidar_idx = 0;
   radar_idx = 0;
 
+  delta_t = 0.0;
+
 
 
 }
@@ -146,12 +148,14 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   }
 
 
-  double delta_t = (meas_package.timestamp_ - time_us_)/1000000.0;
+  delta_t = (meas_package.timestamp_ - time_us_)/1000000.0;
   time_us_ = meas_package.timestamp_;
 
   /********************** PREDICT **********************\
   \*****************************************************/
   Prediction(delta_t);
+  std::cout << "Current time: " << delta_t << std::endl;
+  std::cout << "meas_package.timestamp_" << meas_package.timestamp_ << std::endl;
 
 
 
@@ -202,92 +206,7 @@ void UKF::Prediction(double delta_t) {
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
   
-  /***************************/
-  /** Generate Sigma Points **/
-  /***************************/
-  VectorXd x_aug_ = VectorXd(n_aug_);
-  MatrixXd P_aug_ = MatrixXd(n_aug_,n_aug_);
-  MatrixXd Xsig_aug_ = MatrixXd(n_aug_, 2*n_aug_+1);
-
-  // Create mean state
-  x_aug_.head(5) = x_;
-  x_aug_(5) = 0;
-  x_aug_(6) = 0;
-
-  // Create Augmented covariance matrix
-  P_aug_.topLeftCorner(n_x_, n_x_) << P_;
-  P_aug_.bottomRightCorner(n_aug_-n_x_, n_aug_-n_x_) << std_a_*std_a_, 0,
-  														0, std_yawdd_*std_yawdd_;
-  
-  // Derive Sqrt of P_
-  MatrixXd A_aug_ = P_aug_.llt().matrixL();
-
-  // Construct Augmented Sigma Points Matrix
-  Xsig_aug_.col(0) = x_aug_;
-
-  for(int i=0;i<n_aug_;i++){
-
-  	Xsig_aug_.col(i + 1) = x_aug_ + sqrt(lambda_+n_aug_) * A_aug_.col(i);
-  	Xsig_aug_.col(i + n_aug_+1) = x_aug_ - sqrt(lambda_+n_aug_) * A_aug_.col(i);
-
-  }
-
-  //std::cout << "----Xsig_aug_'s SIZE: " << Xsig_aug_.size() << std::endl;
-
-  /*****************************\
-  **** Predict Sigma Points *****
-  **** Using Process Model  *****
-  \*****************************/
-
-  // Predict Sigma Points using Process Model: State Transfer
-  for(int i=0; i<2*n_aug_+1; i++){
-
-  	double px = Xsig_aug_(0,i);
-  	double py = Xsig_aug_(1,i);
-  	double v = Xsig_aug_(2,i);
-  	double yaw = Xsig_aug_(3,i);
-  	double yawd = Xsig_aug_(4,i);
-  	double nu_a = Xsig_aug_(5,i);
-  	double nu_yawdd = Xsig_aug_(6,i);
-
-  	//Predict state values: determinstic items come first!
-  	double px_pred_, py_pred_;
-
-  	if(fabs(yawd) > 0.001){
-
-  		px_pred_ = px + v/yawd * (sin(yaw + yawd * delta_t) - sin(yaw));
-  		py_pred_ = py + v/yawd * (cos(yaw) - cos(yaw + yawd * delta_t));
-  	}else{
-
-  		px_pred_ = px + v * delta_t * cos(yaw);
-  		py_pred_ = py + v * delta_t * sin(yaw);
-
-  	}
-
-  	double v_pred_ = v;
-  	double yaw_pred_ = yaw + yawd * delta_t;
-  	double yawd_pred_ = yawd;
-
-  	// Now consider the noise
-  	px_pred_ = px_pred_ + 0.5* nu_a*delta_t*delta_t * cos(yaw);
-  	py_pred_ = py_pred_ + 0.5* nu_a*delta_t*delta_t * sin(yaw);
-  	v_pred_ = v_pred_ + nu_a * delta_t;
-  	yaw_pred_ = yaw_pred_ + 0.5* nu_yawdd*delta_t*delta_t;
-  	yawd_pred_ = yawd_pred_ + nu_yawdd * delta_t;
-
-  	// Generate Predicted Sigma Points Matrix
-  	Xsig_pred_(0,i) = px_pred_;
-  	Xsig_pred_(1,i) = py_pred_;
-  	Xsig_pred_(2,i) = v_pred_;
-  	Xsig_pred_(3,i) = yaw_pred_;
-  	Xsig_pred_(4,i) = yawd_pred_;
-
-  	//std::cout << "----Xsig_pred_'s SIZE: " << Xsig_pred_.size() << std::endl;
-
-  }
-
-  
-
+  GenerateSigmaPoints(&Xsig_pred_);
 
   /*****************************************\
   *** Predict STATE Mean and Covariance *****
@@ -573,7 +492,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
 /******* GENERATE + PREDICT Augmented SigmaPoints **********\
 \********* Return Xsig_aug_ matrix (Size: 7x15) ************/
-MatrixXd UKF::GenerateSigmaPoints(){
+void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out){
   /***************************/
   /** Generate Sigma Points **/
   /***************************/
@@ -654,9 +573,9 @@ MatrixXd UKF::GenerateSigmaPoints(){
 
 
 
-  return Xsig_pred_;
+   	*Xsig_out = Xsig_pred_;
 
-
+  }
 
 }
 

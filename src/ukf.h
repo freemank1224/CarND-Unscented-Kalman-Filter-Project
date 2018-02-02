@@ -71,6 +71,8 @@ public:
   int lidar_idx;
   int radar_idx;
 
+  double delta_t;
+
 
   /**
    * Constructor
@@ -106,6 +108,9 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+  void GenerateSigmaPoints(MatrixXd* Xsig_out);
+
 };
 
 #endif /* UKF_H */
