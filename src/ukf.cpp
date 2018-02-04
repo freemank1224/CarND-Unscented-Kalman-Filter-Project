@@ -28,7 +28,7 @@ UKF::UKF() {
   std_a_ = 0.9;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.6;				// 0.3 give good response
+  std_yawdd_ = 0.6;				
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -232,120 +232,163 @@ void UKF::Prediction(double delta_t) {
  * Updates the state and the state covariance matrix using a laser measurement.
  * @param {MeasurementPackage} meas_package
  */
-void UKF::UpdateLidar(MeasurementPackage meas_package) {
-  /**
-  TODO:
+// void UKF::UpdateLidar(MeasurementPackage meas_package) {
+//   /**
+//   TODO:
 
-  Complete this function! Use lidar data to update the belief about the object's
-  position. Modify the state vector, x_, and covariance, P_.
+//   Complete this function! Use lidar data to update the belief about the object's
+//   position. Modify the state vector, x_, and covariance, P_.
 
-  You'll also need to calculate the lidar NIS.
-  */
+//   You'll also need to calculate the lidar NIS.
+//   */
 
-  /***************     STAGE 1    ****************\
-  *** Predict MEASUREMENT mean and Covariance *****
-  -------------------------------------------------
-  -------------------------------------------------
-  * According to the course, we don't need to *****
-  * regenerate sigma points for this process. *****
-  * Just use the sigma points and Xsig_pred . *****
-  \***********************************************/
-  // Parameters for radar measurements
-  int n_z_ = 2;
+//   /***************     STAGE 1    ****************\
+//   *** Predict MEASUREMENT mean and Covariance *****
+//   -------------------------------------------------
+//   -------------------------------------------------
+//   * According to the course, we don't need to *****
+//   * regenerate sigma points for this process. *****
+//   * Just use the sigma points and Xsig_pred . *****
+//   \***********************************************/
+//   // Parameters for radar measurements
+//   int n_z_ = 2;
   
-  //create matrix for sigma points in measurement space
-  MatrixXd Zsig_ = MatrixXd(n_z_, 2 * n_aug_ + 1);
+//   //create matrix for sigma points in measurement space
+//   MatrixXd Zsig_ = MatrixXd(n_z_, 2 * n_aug_ + 1);
 
-  //mean predicted measurement
-  VectorXd z_pred_ = VectorXd(n_z_);
+//   //mean predicted measurement
+//   VectorXd z_pred_ = VectorXd(n_z_);
   
-  //measurement covariance matrix S
-  MatrixXd S_ = MatrixXd(n_z_, n_z_); 
+//   //measurement covariance matrix S
+//   MatrixXd S_ = MatrixXd(n_z_, n_z_); 
 
-  // Predict Sigma Points using Measurement Model
-  for(int i=0; i<2*n_aug_+1; i++){
-  	VectorXd xsig_pred_ = Xsig_pred_.col(i);
-  	double px = xsig_pred_(0);
-    double py = xsig_pred_(1);
+//   // Predict Sigma Points using Measurement Model
+//   for(int i=0; i<2*n_aug_+1; i++){
+//   	VectorXd xsig_pred_ = Xsig_pred_.col(i);
+//   	double px = xsig_pred_(0);
+//     double py = xsig_pred_(1);
 
-    Zsig_.col(i) << px, py;
-  }
+//     Zsig_.col(i) << px, py;
+//   }
 
-  // Calculate mean predicted measurement
-  for(int j=0; j<n_z_; j++){
-  	z_pred_(j) = Zsig_.row(j) * weights_;
-  }
+//   // Calculate mean predicted measurement
+//   for(int j=0; j<n_z_; j++){
+//   	z_pred_(j) = Zsig_.row(j) * weights_;
+//   }
 
-  // Calculate innovation covariance matrix S
-  MatrixXd tempMtx = MatrixXd(n_z_,n_z_);
-  S_.fill(0.0);
-  tempMtx.fill(0.0);
+//   // Calculate innovation covariance matrix S
+//   MatrixXd tempMtx = MatrixXd(n_z_,n_z_);
+//   S_.fill(0.0);
+//   tempMtx.fill(0.0);
 
-  for(int k=0; k<2*n_aug_+1; k++){
+//   for(int k=0; k<2*n_aug_+1; k++){
 
-  	  VectorXd z_diff_ = Zsig_.col(k) - z_pred_;
-      tempMtx << weights_(k) * z_diff_ * z_diff_.transpose();
-      S_ += tempMtx;
-      //std::cout << "----Predicted S_: " << S_ << std::endl;
-  }
+//   	  VectorXd z_diff_ = Zsig_.col(k) - z_pred_;
+//       tempMtx << weights_(k) * z_diff_ * z_diff_.transpose();
+//       S_ += tempMtx;
+//       //std::cout << "----Predicted S_: " << S_ << std::endl;
+//   }
 
 
-  // Take noise into account
-  MatrixXd R_ = MatrixXd(n_z_,n_z_);
-  R_ << std_laspx_*std_laspx_, 0,
-  	   0, std_laspy_*std_laspy_;
+//   // Take noise into account
+//   MatrixXd R_ = MatrixXd(n_z_,n_z_);
+//   R_ << std_laspx_*std_laspx_, 0,
+//   	   0, std_laspy_*std_laspy_;
 
-  // Combin S and Noise R
+//   // Combin S and Noise R
 
-  S_ += R_;
-  //std::cout << "----Predicted S_: " << S_ << std::endl;
+//   S_ += R_;
+//   //std::cout << "----Predicted S_: " << S_ << std::endl;
 
-  /***************     STAGE 2    ****************\
-  ********* UPDATE Radar Measurements   ***********
-  \***********************************************/
-  // Load measurements
-  VectorXd z_ = VectorXd(n_z_);
-  z_ << meas_package.raw_measurements_[0],
-  		meas_package.raw_measurements_[1];
+//   /***************     STAGE 2    ****************\
+//   ********* UPDATE Radar Measurements   ***********
+//   \***********************************************/
+//   // Load measurements
+//   VectorXd z_ = VectorXd(n_z_);
+//   z_ << meas_package.raw_measurements_[0],
+//   		meas_package.raw_measurements_[1];
 
-  // Create cross correlation matrix
-  MatrixXd Tc_ = MatrixXd(n_x_, n_z_);
-  MatrixXd tempMtx2 = MatrixXd(n_x_, n_z_);
-  Tc_.fill(0.0);
-  tempMtx2.fill(0.0);
+//   // Create cross correlation matrix
+//   MatrixXd Tc_ = MatrixXd(n_x_, n_z_);
+//   MatrixXd tempMtx2 = MatrixXd(n_x_, n_z_);
+//   Tc_.fill(0.0);
+//   tempMtx2.fill(0.0);
 
-  // Calculate cross correlation matrix
-  for(int k=0; k<2*n_aug_+1; k++){
-  	  // NOT z_pred_ - z_ !!!!!!!!!!! 
-   	  VectorXd z_diff_ = Zsig_.col(k) - z_pred_;
+//   // Calculate cross correlation matrix
+//   for(int k=0; k<2*n_aug_+1; k++){
+//   	  // NOT z_pred_ - z_ !!!!!!!!!!! 
+//    	  VectorXd z_diff_ = Zsig_.col(k) - z_pred_;
   	  
-  	  VectorXd x_diff_ = Xsig_pred_.col(k) - x_;
+//   	  VectorXd x_diff_ = Xsig_pred_.col(k) - x_;
 
-      tempMtx2 << weights_(k) * x_diff_ * z_diff_.transpose();
-      Tc_ += tempMtx2;
-  }
+//       tempMtx2 << weights_(k) * x_diff_ * z_diff_.transpose();
+//       Tc_ += tempMtx2;
+//   }
 
-  // Calculate Kalmann Gain
-  MatrixXd K_ = Tc_ * S_.inverse();
+//   // Calculate Kalmann Gain
+//   MatrixXd K_ = Tc_ * S_.inverse();
 
-  // Update state mean and covariance matrix
-  x_ = x_ + K_*(z_ - z_pred_);
-  P_ = P_ - K_ * S_ * K_.transpose();
+//   // Update state mean and covariance matrix
+//   x_ = x_ + K_*(z_ - z_pred_);
+//   P_ = P_ - K_ * S_ * K_.transpose();
 
-  std::cout << "****** Lidar Update P_: ******" << std::endl;
-  std::cout << P_ << std::endl;  
+//   std::cout << "****** Lidar Update P_: ******" << std::endl;
+//   std::cout << P_ << std::endl;  
 
-  /*********************** NIS ************************\
-  ****** Switch Lidar and Radar Measurement Data  *****
-  \****************************************************/
-  std::cout << "------------ Calculate NIS ---------------" << std::endl;
-  //nis = CalculateNIS()
-  nis_value = CalculateNIS(z_, z_pred_, S_);
-  std::cout << "------------ Calculate NIS: " << nis_value <<"---------------" << std::endl;
+//   /*********************** NIS ************************\
+//   ****** Switch Lidar and Radar Measurement Data  *****
+//   \****************************************************/
+//   std::cout << "------------ Calculate NIS ---------------" << std::endl;
+//   //nis = CalculateNIS()
+//   nis_value = CalculateNIS(z_, z_pred_, S_);
+//   std::cout << "------------ Calculate NIS: " << nis_value <<"---------------" << std::endl;
 
   
-}
+// }
 
+
+void UKF::UpdateLidar(MeasurementPackage meas_package){
+
+	/*************** Created for accelerating performance by using linear KF method ************/
+	int n_z_ = 2;
+
+	MatrixXd H_ = MatrixXd(n_z_, n_x_);
+	H_ << 1,0,0,0,0,
+		  0,1,0,0,0;
+
+	VectorXd z_ = VectorXd(n_z_);
+	z_ << meas_package.raw_measurements_[0],
+  		  meas_package.raw_measurements_[1];
+
+	MatrixXd R_ = MatrixXd(n_z_, n_z_);
+	R_ << std_laspx_*std_laspx_, 0,
+		  0, std_laspy_*std_laspy_;
+
+	VectorXd z_pred_ = H_ * x_;
+	VectorXd y_ = z_ - z_pred_;
+	MatrixXd Ht_ = H_.transpose();
+	MatrixXd S_ = H_ * P_ * Ht_ + R_;
+	MatrixXd Si_ = S_.inverse();
+	MatrixXd PHt_ = P_ * Ht_;
+	MatrixXd K_ = PHt_ * Si_;
+
+	x_ = x_ + (K_ * y_);
+	long x_size = x_.size();
+	MatrixXd I_ = MatrixXd::Identity(x_size, x_size);
+	P_ = (I_ - K_ * H_) * P_;
+
+	std::cout << "****** Lidar Update P_: ******" << std::endl;
+	std::cout << P_ << std::endl;  
+
+	/*********************** NIS ************************\
+	****** Switch Lidar and Radar Measurement Data  *****
+	\****************************************************/
+	std::cout << "------------ Calculate NIS ---------------" << std::endl;
+	//nis = CalculateNIS()
+	nis_value = CalculateNIS(z_, z_pred_, S_);
+	std::cout << "------------ Calculate NIS: " << nis_value <<"---------------" << std::endl;
+
+}
 
 /**
  * Updates the state and the state covariance matrix using a radar measurement.
