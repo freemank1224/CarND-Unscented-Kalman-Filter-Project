@@ -25,10 +25,10 @@ UKF::UKF() {
   P_ = MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 0.9;
+  std_a_ = 0.6;//0.9;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.6;				
+  std_yawdd_ = 0.5;//0.6;				
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -61,14 +61,18 @@ UKF::UKF() {
   n_x_ = x_.size();			// 5
   // Augmented state dimension
   n_aug_ = n_x_ + 2;			// 7
+
+  // Augmented Variables' Column Number: Used for many times, define a specific variable to improve calculation performance
+  n_aug_col_ = 2*n_aug_ + 1;
+
   // Lambda
   lambda_ = 3 - n_aug_;
 
   // Weights
-  weights_ = VectorXd(2*n_aug_+1);
+  weights_ = VectorXd(n_aug_col_);
 
   // Xsig_pred
-  Xsig_pred_ = MatrixXd(n_x_, 2*n_aug_+1);
+  Xsig_pred_ = MatrixXd(n_x_, n_aug_col_); 
 
   time_us_ = 0;
 
@@ -416,7 +420,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   int n_z_ = 3;
   
   //create matrix for sigma points in measurement space
-  MatrixXd Zsig_ = MatrixXd(n_z_, 2 * n_aug_ + 1);
+  MatrixXd Zsig_ = MatrixXd(n_z_, n_aug_col_);
 
   //mean predicted measurement
   VectorXd z_pred_ = VectorXd(n_z_);
@@ -455,7 +459,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   S_.fill(0.0);
   tempMtx.fill(0.0);
 
-  for(int k=0; k<2*n_aug_+1; k++){
+  for(int k=0; k<n_aug_col_; k++){
   	  VectorXd z_diff_ = Zsig_.col(k) - z_pred_;
 
   	  while(z_diff_(1) < -M_PI) z_diff_(1) += 2.*M_PI;
@@ -492,7 +496,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   tempMtx2.fill(0.0);
 
   // Calculate cross correlation matrix
-  for(int k=0; k<2*n_aug_+1; k++){
+  for(int k=0; k<n_aug_col_; k++){
   	  // WARNING: HERE use z_pred_ for z_diff calculations !!!!
   	  VectorXd z_diff_ = Zsig_.col(k) - z_pred_;
   	  while(z_diff_(1) < -M_PI) z_diff_(1) += 2.*M_PI;
@@ -546,7 +550,7 @@ void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out){
   /***************************/
   VectorXd x_aug_ = VectorXd(n_aug_);
   MatrixXd P_aug_ = MatrixXd(n_aug_,n_aug_);
-  MatrixXd Xsig_aug_ = MatrixXd(n_aug_, 2*n_aug_+1);
+  MatrixXd Xsig_aug_ = MatrixXd(n_aug_, n_aug_col_);
 
   // Create mean state
   x_aug_.head(5) = x_;
@@ -579,7 +583,7 @@ void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out){
   /*********** Predict Sigma Points *************\
   \******* SIZE changes from 7x15 to 5x15 *******/
 
-  for(int i=0; i<2*n_aug_+1; i++){
+  for(int i=0; i<n_aug_col_; i++){
 
   	double px = Xsig_aug_(0,i);
   	double py = Xsig_aug_(1,i);
@@ -638,7 +642,7 @@ void UKF::PredictMeanCovariance(){
   *** Predict STATE Mean and Covariance *****
   \*****************************************/
   // Generate Weights
-  for(int i=0; i<2*n_aug_+1; i++){
+  for(int i=0; i<n_aug_col_; i++){
 
   	if(i == 0){
   		weights_(i) = lambda_ / (lambda_+n_aug_);
@@ -665,7 +669,7 @@ void UKF::PredictMeanCovariance(){
   //std::cout << "---------------------------" << std::endl;
   //std::cout << "----Predicted P_: " << P_ << std::endl;
 
-  for(int k=0; k<2*n_aug_+1; k++){
+  for(int k=0; k<n_aug_col_; k++){
 
   	VectorXd x_diff_ = Xsig_pred_.col(k) - x_;
   	while(x_diff_(3) < -M_PI) x_diff_(3) += 2.*M_PI;
